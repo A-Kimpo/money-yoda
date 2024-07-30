@@ -1,5 +1,6 @@
-import * as app from './express';
-import * as db from './objection';
+import 'module-alias/register';
+import * as app from './services/express';
+import * as db from './services/objection';
 
 db.connect();
 app.start();

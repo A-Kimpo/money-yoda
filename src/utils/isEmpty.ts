@@ -1,0 +1,1 @@
+export default (value: string | undefined) => !value || value.trim() === '';

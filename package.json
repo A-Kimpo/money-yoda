@@ -5,7 +5,8 @@
   "main": "./src/app.ts",
   "scripts": {
     "dev": "nodemon ./src/app.ts",
-    "test": "npx jest"
+    "migrate": "knex migrate:latest --env production",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -26,10 +27,14 @@
   },
   "homepage": "https://github.com/A-Kimpo/money-yoda-api#readme",
   "devDependencies": {
+    "@types/bcrypt": "~10.0.28-alpha",
     "@types/cors": "~2.8.17",
     "@types/express": "~4.17.21",
+    "@types/jsonwebtoken": "~9.0.6",
+    "@types/module-alias": "~2.0.4",
     "@types/morgan": "^1.9.9",
     "@types/mysql": "~2.15.26",
+    "@types/ua-parser-js": "~0.7.39",
     "@types/uuid": "~10.0.0",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.4",
@@ -37,15 +42,18 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "argon2-ffi": "^2.0.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "http-status": "^1.7.4",
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
     "module-alias": "^2.2.3",
     "mysql": "^2.18.1",
     "objection": "^3.0.2",
+    "ua-parser-js": "^1.0.38",
     "uuid": "^10.0.0"
   },
   "_moduleAliases": {
