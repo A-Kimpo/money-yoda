@@ -1,6 +1,8 @@
 import express, { json, urlencoded } from 'express';
+import cookies from 'cookie-parser';
 import morgan from 'morgan';
 import cors from 'cors';
+import helmet from 'helmet';
 import 'dotenv/config';
 
 import routes from '@/routes';
@@ -12,10 +14,12 @@ const app = express();
 const logger = morgan('combined');
 app.use(logger);
 
-// CORS
+// Security
 app.use(cors());
+app.use(helmet());
 
 // Request middlewares
+app.use(cookies());
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
