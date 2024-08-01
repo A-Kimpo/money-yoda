@@ -38,8 +38,8 @@ export const login = async (req: Request, res: Response) => {
       success: true,
       data: {
         id: user.id,
-        access_token,
-        refresh_token
+        access_token
+        // refresh_token
       }
     });
   } catch (e: any) {
@@ -75,22 +75,23 @@ export const isAuth = async (req: Request, res: Response) => {
     const bearerHeader = req.headers['authorization'];
 
     if (isEmpty(bearerHeader))
-      throw new Error('An unexpected error has occurred');
+      throw new Error('Authorization header is required');
 
     const access_token = bearerHeader?.split(/\s/)[1];
     const user_token = await Token.query().findOne({
       access_token
     });
 
-    if (!user_token) throw new Error('An unexpected error has occurred');
+    if (!user_token) throw new Error('Unauthorized');
 
     const user = await User.query().findOne({
       id: user_token.user_id
     });
 
-    if (!user) throw new Error('An unexpected error has occurred');
+    if (!user) throw new Error('User not found');
 
     user.getAccessToken();
+    user_token.verifyAccessToken(); // verify that access token isn't expired
 
     res.json({
       success: true
@@ -108,22 +109,21 @@ export const refreshToken = async (req: Request, res: Response) => {
     const { refreshToken } = req.cookies;
 
     if (isEmpty(refreshToken))
-      throw new Error('An unexpected error has occurred');
+      throw new Error('Refresh token is not exist in cookies');
 
     const user_token = await Token.query().findOne({
       refresh_token: refreshToken
     });
 
-    if (!user_token) throw new Error('An unexpected error has occurred');
+    if (!user_token) throw new Error('Refresh token not found');
+
+    user_token.verifyRefreshToken(); // verify that refresh token isn't expired
 
     const user = await User.query().findOne({
       id: user_token.user_id
     });
 
-    user_token.verifyAccessToken();
-    user_token.verifyRefreshToken();
-
-    if (!user) throw new Error('An unexpected error has occurred');
+    if (!user) throw new Error('User not found');
 
     const new_access_token = user.getAccessToken();
     const new_refresh_token = user.getRefreshToken();
@@ -135,12 +135,17 @@ export const refreshToken = async (req: Request, res: Response) => {
       ua: newUA
     });
 
+    res.cookie('refreshToken', new_refresh_token, {
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      httpOnly: true
+    });
+
     res.json({
       success: true,
       data: {
         id: user.id,
-        access_token: new_access_token,
-        refresh_token: new_refresh_token
+        access_token: new_access_token
+        // refresh_token: new_refresh_token
       }
     });
   } catch (e: any) {

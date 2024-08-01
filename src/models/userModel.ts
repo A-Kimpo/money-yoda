@@ -39,10 +39,10 @@ export default class User extends Model {
   getAccessToken() {
     return jwt.sign(
       {
-        username: 'this.username',
-        user_id: 'this.id'
+        username: this.username,
+        user_id: this.id
       },
-      config.jwt.refresh_token_secret,
+      config.jwt.access_token_secret,
       {
         expiresIn: config.jwt.access_token_expiration
       }
@@ -52,8 +52,8 @@ export default class User extends Model {
   getRefreshToken() {
     return jwt.sign(
       {
-        username: 'this.username',
-        user_id: 'this.id'
+        username: this.username,
+        user_id: this.id
       },
       config.jwt.refresh_token_secret,
       {
