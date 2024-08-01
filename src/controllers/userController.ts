@@ -46,7 +46,7 @@ export const getById = async (req: Request, res: Response) => {
 
 export const create = async (req: Request, res: Response) => {
   try {
-    let { username, email, password } = req.body;
+    let { username, email, password, is_admin } = req.body;
 
     if (isEmpty(username) || isEmpty(email) || isEmpty(password)) {
       throw new Error('All fields must be fill');
@@ -62,7 +62,8 @@ export const create = async (req: Request, res: Response) => {
     const user = await User.query().insertAndFetch({
       username,
       email,
-      password
+      password,
+      is_admin
     });
 
     res.json({
@@ -117,7 +118,7 @@ export const update = async (req: Request, res: Response) => {
 
     const userUpdate = await User.query().updateAndFetchById(id, newData);
 
-    await res.json({
+    res.json({
       success: true,
       data: {
         id: userUpdate.id,
@@ -125,7 +126,7 @@ export const update = async (req: Request, res: Response) => {
       }
     });
   } catch (e: any) {
-    await res.json({
+    res.json({
       success: false,
       message: e.message || e
     });
@@ -135,6 +136,11 @@ export const update = async (req: Request, res: Response) => {
 export const remove = async (req: Request, res: Response) => {
   try {
     const { user_id: id } = req.params;
+    const user = await User.query().findById(id);
+
+    if (!user) throw new Error('User not found');
+
+    if (user.is_admin) throw new Error('Admin cannot be deleted');
 
     if (isEmpty(id)) throw new Error('An unexpected error has occurred');
 
@@ -142,12 +148,12 @@ export const remove = async (req: Request, res: Response) => {
 
     if (!resultDelete) throw new Error('An unexpected error has occurred');
 
-    await res.json({
+    res.json({
       success: true,
       message: `Account #${id} was deleted`
     });
   } catch (e: any) {
-    await res.json({
+    res.json({
       success: false,
       message: e.message || e
     });
