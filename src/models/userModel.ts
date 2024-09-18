@@ -5,6 +5,18 @@ import crypto from 'crypto';
 
 import config from '@/config';
 
+export interface UserType {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  password: string;
+  email: string;
+  is_admin?: boolean;
+  date_added?: Date;
+  date_modified?: Date;
+}
+
 export default class User extends Model {
   id!: number;
   username!: string;

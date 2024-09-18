@@ -5,6 +5,7 @@ import { isEmpty } from '@/utils';
 
 export const login = async (req: Request, res: Response) => {
   try {
+    console.log('!!!!', req.body);
     const { email, password } = req.body;
 
     if (isEmpty(email) || isEmpty(password))

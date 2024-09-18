@@ -8,7 +8,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('password').notNullable();
     table.timestamp('date_added').defaultTo(knex.fn.now());
     table.timestamp('date_modified').defaultTo(knex.fn.now());
-    table.boolean('is_admin').defaultTo(0);
+    table.boolean('is_admin').defaultTo(false);
   });
 }
 
