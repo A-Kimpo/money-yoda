@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Wallet } from '../models';
+import { User, Wallet } from '../models';
 
 export const getWallets = async (req: Request, res: Response) => {
   try {
@@ -12,9 +12,21 @@ export const getWallets = async (req: Request, res: Response) => {
   }
 };
 
+export const getWalletsByUserId = async (req: Request, res: Response) => {
+  try {
+    const { id: user_id } = req.params;
+    const wallets = await Wallet.query().select('*').where('user_id', user_id);
+
+    res.json(wallets);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching wallets' });
+  }
+};
+
 export const getWallet = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
     const wallet = await Wallet.query().findById(id);
 
     if (!wallet) {
@@ -30,7 +42,17 @@ export const getWallet = async (req: Request, res: Response) => {
 
 export const createWallet = async (req: Request, res: Response) => {
   try {
-    const wallet = await Wallet.query().insert(req.body);
+    const { name: walletName, user_id } = req.body;
+
+    const user = await User.query().findOne({ id: user_id });
+
+    if (!user) throw new Error('User not found');
+
+    const wallet = await Wallet.query().insert({
+      name: walletName,
+      user_id: user.id,
+      balance: 0,
+    });
 
     res.json(wallet);
   } catch (error) {
