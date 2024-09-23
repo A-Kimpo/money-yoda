@@ -1,9 +1,6 @@
 import { Model } from 'objection';
 import { argon2i } from 'argon2-ffi';
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-
-import config from '@/config';
 
 export interface UserType {
   id: number;
@@ -46,35 +43,5 @@ export default class User extends Model {
       this.password = hash;
     }
     this.date_modified = new Date();
-  }
-
-  getAccessToken() {
-    return jwt.sign(
-      {
-        username: this.username,
-        user_id: this.id
-      },
-      config.jwt.access_token_secret,
-      {
-        expiresIn: config.jwt.access_token_expiration
-      }
-    );
-  }
-
-  getRefreshToken() {
-    return jwt.sign(
-      {
-        username: this.username,
-        user_id: this.id
-      },
-      config.jwt.refresh_token_secret,
-      {
-        expiresIn: config.jwt.refresh_token_expiration
-      }
-    );
-  }
-
-  verifyPassword(password: string) {
-    return argon2i.verify(this.password, password);
   }
 }

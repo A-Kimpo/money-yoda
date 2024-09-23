@@ -9,9 +9,11 @@ export async function up(knex: Knex): Promise<void> {
         table.foreign('wallet_id').references('wallets.id');
         table.string('type', 10).notNullable().checkIn(['income', 'expense']);
         table.decimal('amount', 10, 2).notNullable();
-        table.text('description');
         table.text('tag');
-        table.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
+        table.text('category');
+        table.text('description');
+        table.timestamp('date_added').defaultTo(knex.fn.now());
+        table.timestamp('date_modified').defaultTo(knex.fn.now());
       });
     }
   });

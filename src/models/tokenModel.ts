@@ -1,9 +1,5 @@
 import { Model } from 'objection';
-import { UAParser } from 'ua-parser-js';
-import jwt from 'jsonwebtoken';
-
 import { User } from '@/models';
-import config from '@/config';
 
 export default class Token extends Model {
   id!: number;
@@ -37,28 +33,5 @@ export default class Token extends Model {
         }
       }
     };
-  }
-
-  verifyAccessToken(option = {}) {
-    return jwt.verify(
-      this.access_token,
-      config.jwt.access_token_secret,
-      option
-    );
-  }
-
-  verifyRefreshToken(option = {}) {
-    return jwt.verify(
-      this.refresh_token,
-      config.jwt.refresh_token_secret,
-      option
-    );
-  }
-
-  async getUA(ua: any) {
-    const parser = new UAParser();
-    parser.setUA(ua);
-    const agent = parser.getResult();
-    return JSON.stringify({ ...agent });
   }
 }
