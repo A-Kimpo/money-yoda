@@ -11,6 +11,19 @@ export default class Wallet extends Model {
     return 'wallets';
   }
 
+  static get jsonSchema() {
+    return {
+      type: 'object',
+      required: ['user_id', 'name'],
+      properties: {
+        id: { type: 'integer' },
+        user_id: { type: 'integer' },
+        name: { type: 'string' },
+        balance: { type: 'number' }
+      }
+    };
+  }
+
   static get relationMappings() {
     return {
       user: {

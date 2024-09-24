@@ -16,6 +16,24 @@ export default class Transaction extends Model {
     return 'transactions';
   }
 
+  static get jsonSchema() {
+    return {
+      type: 'object',
+      required: ['wallet_id', 'type', 'amount'],
+      properties: {
+        id: { type: 'integer' },
+        wallet_id: { type: 'integer' },
+        type: { type: 'string' },
+        amount: { type: 'number' },
+        tag: { type: 'string' },
+        category: { type: 'string' },
+        description: { type: 'string' },
+        date_added: { type: 'string' },
+        date_modified: { type: 'string' }
+      }
+    };
+  }
+
   async $beforeInsert() {
     this.date_added = new Date();
   }

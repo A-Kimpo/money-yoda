@@ -27,6 +27,22 @@ export default class User extends Model {
     return 'users';
   }
 
+  static get jsonSchema() {
+    return {
+      type: 'object',
+      required: ['username', 'password', 'email'],
+      properties: {
+        id: { type: 'integer' },
+        username: { type: 'string' },
+        password: { type: 'string' },
+        email: { type: 'string' },
+        is_admin: { type: 'boolean' },
+        date_added: { type: 'string' },
+        date_modified: { type: 'string' }
+      }
+    };
+  }
+
   async $beforeInsert() {
     const salt = crypto.randomBytes(32);
     const hash = await argon2i.hash(this.password, salt);
