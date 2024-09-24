@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 
 import { User } from '@/models';
+import { UserService } from '@/services';
 import { isEmpty } from '@/utils';
 
-export const getAll = async (req: Request, res: Response) => {
+export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.query();
+    const userService = new UserService();
+    const users = await userService.getAllUsers();
 
     res.json({
       success: true,
@@ -19,22 +21,18 @@ export const getAll = async (req: Request, res: Response) => {
   }
 };
 
-export const getById = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: Response) => {
   try {
     const { user_id: id } = req.params;
 
     if (isEmpty(id)) throw new Error('Required params missing');
 
-    const user = await User.query().findById(id);
-
-    if (!user) throw new Error('User not found');
-
-    const data: any = { ...user };
-    delete data.password;
+    const userService = new UserService();
+    const user = await userService.getUserById(id);
 
     res.json({
       success: true,
-      data: data
+      data: user
     });
   } catch (e: any) {
     res.json({
@@ -46,33 +44,18 @@ export const getById = async (req: Request, res: Response) => {
 
 export const create = async (req: Request, res: Response) => {
   try {
-    let { username, email, password, is_admin } = req.body;
+    const { body: userData } = req;
+    const userService = new UserService();
 
-    if (isEmpty(username) || isEmpty(email) || isEmpty(password)) {
-      throw new Error('All fields must be fill');
-    }
+    const isExistUser = await userService.checkExistUser(userData);
+    if (isExistUser) throw new Error('Username or email already taken');
 
-    const isExists = await User.query()
-      .select('users.email')
-      .where('users.email', '=', email)
-      .orWhere('users.username', '=', username);
-
-    if (isExists.length > 0) throw new Error('Username or email already taken');
-
-    const user = await User.query().insertAndFetch({
-      username,
-      email,
-      password,
-      is_admin
-    });
+    const { id, username } = await userService.createUser(userData);
 
     res.json({
       success: true,
       message: 'User was created',
-      data: {
-        id: user.id,
-        username: user.username
-      }
+      data: { id, username }
     });
   } catch (e: any) {
     res.json({
@@ -85,38 +68,14 @@ export const create = async (req: Request, res: Response) => {
 export const update = async (req: Request, res: Response) => {
   try {
     const { user_id: id } = req.params;
-
-    const { username, email, password } = req.body;
+    const { body: userData } = req;
 
     if (isEmpty(id)) throw new Error('An unexpected error has occurred');
 
-    const user = await User.query().findById(id);
+    const userService = new UserService();
 
-    if (!user) throw new Error('User not found');
-
-    const bodyData: any = { password };
-    const newData: any = {};
-
-    if (!isEmpty(username)) {
-      const isExists = await User.query().findOne({ username });
-      if (!isExists) newData.username = username;
-    }
-
-    if (!isEmpty(email)) {
-      const isExists = await User.query().findOne({ email });
-      if (!isExists) newData.email = email;
-    }
-
-    for (const key in bodyData) {
-      if (!isEmpty(bodyData[key])) {
-        newData[key] = bodyData[key];
-      }
-    }
-
-    if (Object.keys(newData).length === 0)
-      throw new Error('None of the data has been changed');
-
-    const userUpdate = await User.query().updateAndFetchById(id, newData);
+    await userService.getUserById(id);
+    const userUpdate = await User.query().updateAndFetchById(id, userData);
 
     res.json({
       success: true,
@@ -136,17 +95,13 @@ export const update = async (req: Request, res: Response) => {
 export const remove = async (req: Request, res: Response) => {
   try {
     const { user_id: id } = req.params;
-    const user = await User.query().findById(id);
-
-    if (!user) throw new Error('User not found');
-
-    if (user.is_admin) throw new Error('Admin cannot be deleted');
-
     if (isEmpty(id)) throw new Error('An unexpected error has occurred');
 
-    const resultDelete = await User.query().deleteById(id);
+    const userService = new UserService();
 
-    if (!resultDelete) throw new Error('An unexpected error has occurred');
+    const resultDelete = await userService.deleteUser(id);
+
+    if (!resultDelete) throw new Error('Deletion failed');
 
     res.json({
       success: true,

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
-  getAll,
-  getById,
+  getAllUsers,
+  getUserById,
   create,
   update,
   remove
@@ -10,10 +10,10 @@ import { auth, authAdmin } from '@/middlewares';
 
 const router = Router();
 
-router.get('', authAdmin, getAll);
-router.post('/create', create);
-router.get('/:user_id', auth, getById);
+router.get('', authAdmin, getAllUsers);
+router.get('/:user_id', auth, getUserById);
 router.put('/:user_id', authAdmin, update);
 router.delete('/:user_id', authAdmin, remove);
+router.post('/create', create);
 
 export default router;
