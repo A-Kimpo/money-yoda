@@ -4,6 +4,7 @@ import { Wallet, Transaction } from '../models';
 export const getAllTransactions = async (req: Request, res: Response) => {
   try {
     const { query } = req;
+    console.log(query);
 
     const page = (parseInt(query.page as string) || 1) - 1;
     const perPage = parseInt(query.perPage as string) || 10;
@@ -21,7 +22,8 @@ export const getAllTransactions = async (req: Request, res: Response) => {
 
 export const getTransactionsByTag = async (req: Request, res: Response) => {
   try {
-    const tag = req.params.tag;
+    const tag = req.query.tag as string;
+
     const transactions = await Transaction.query().where('tag', tag);
     res.json(transactions);
   } catch (error) {
@@ -30,7 +32,30 @@ export const getTransactionsByTag = async (req: Request, res: Response) => {
   }
 };
 
-export const getTransaction = async (req: Request, res: Response) => {
+export const getTransactionsByWallet = async (req: Request, res: Response) => {
+  try {
+    const walletId = req.params.walletId;
+    const transactions = await Transaction.query().where('wallet_id', walletId);
+    res.json(transactions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching transactions by wallet' });
+  }
+};
+
+export const getTransactionsByType = async (req: Request, res: Response) => {
+  try {
+    const { type } = req.params;
+
+    const transactions = await Transaction.query().where('type', type);
+    res.json(transactions);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getTransactionById = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
     const transaction = await Transaction.query().findById(id);
@@ -87,7 +112,7 @@ export const createTransaction = async (req: Request, res: Response) => {
     await Wallet.query().updateAndFetchById(wallet_id, { balance: newBalance });
 
     // Add the new transaction to the database
-    const transaction = await Transaction.query().insert(req.body);
+    const transaction = await Transaction.query().insert({ ...req.body, wallet_id: +wallet.id, amount: +amount });
     res.json(transaction);
   } catch (error) {
     console.error(error);

@@ -70,14 +70,14 @@ export default class TokenService {
     const bearerHeader = req.headers['authorization'];
 
     if (isEmpty(bearerHeader))
-      throw new Error('An unexpected error has occurred');
+      throw new Error('Unauthorized: No token provided');
 
     const access_token = bearerHeader?.split(/\s/)[1];
     const user_token = await Token.query().findOne({
       access_token
     });
 
-    if (!user_token) throw new Error('An unexpected error has occurred');
+    if (!user_token) throw new Error('Unauthorized: Invalid token');
 
     return user_token;
   };
