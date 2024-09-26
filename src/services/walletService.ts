@@ -2,11 +2,18 @@ import { Response } from 'express';
 import { UAParser } from 'ua-parser-js';
 import jwt from 'jsonwebtoken';
 
-import { User } from '@/models';
-import { Token } from '@/models';
+import { Wallet } from '@/models';
+import { TransactionService } from '@/services';
 import config from '@/config';
 
 export default class WalletService {  
+  async getBalance(walletId: number) {
+    const wallet = await Wallet.query().findById(walletId);
+    if (!wallet) throw new Error('Wallet not found');
+    
+    return wallet.balance;
+  }
+
   // async createWallet(req: any, res: Response) {
   //   try {
   //     const { name: walletName, user_id } = req.body;

@@ -22,7 +22,7 @@ export const getAllTransactions = async (req: Request, res: Response) => {
 
 export const getTransactionsByTag = async (req: Request, res: Response) => {
   try {
-    const tag = req.query.tag as string;
+    const tag = req.params.tag;
 
     const transactions = await Transaction.query().where('tag', tag);
     res.json(transactions);
@@ -71,11 +71,17 @@ export const getTransactionById = async (req: Request, res: Response) => {
   }
 };
 
-export const filterByDateRange = async (req: Request, res: Response) => {
-  try {
-    const { range } = req.body;
+function convertToDate(dateStrs: string[]) {
+  return dateStrs.map(dateStr => new Date(dateStr));
+}
 
-    const transactions = await Transaction.query().whereBetween('created_at', range);
+export const getStatistics = async (req: Request, res: Response) => {
+  try {
+    const { range: datesRange } = req.body;
+
+    const dates = convertToDate(datesRange);
+
+    const transactions = await Transaction.query().whereBetween('date_added', [dates[0], dates[1]]);
 
     if (!transactions) {
       res.status(404).json({ message: 'Transaction not found' });

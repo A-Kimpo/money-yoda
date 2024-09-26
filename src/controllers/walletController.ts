@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { User, Wallet } from '../models';
 
+import { WalletService } from '@/services';
+
 export const getWallets = async (req: Request, res: Response) => {
   try {
     const wallets = await Wallet.query();
@@ -85,3 +87,16 @@ export const deleteWallet = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error deleting wallet' });
   }
 };
+
+export const getBalance = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const walletService = new WalletService();
+
+    const balance = await walletService.getBalance(+id);
+    res.json({ balance });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching wallet balance' });
+  }
+}
