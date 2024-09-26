@@ -10,7 +10,9 @@ export const login = async (req: Request, res: Response) => {
 
     const authenticatedUser = await authService.authUser(email, password);
 
-    const { access_token, refresh_token } = await tokenService.createToken(authenticatedUser);
+    const { access_token, refresh_token } = await tokenService.createToken(
+      authenticatedUser
+    );
 
     await tokenService.setRefreshTokenCookie(res, refresh_token);
 
@@ -42,7 +44,7 @@ export const logout = async (req: Request, res: Response) => {
   } catch (e: any) {
     return res.json({
       success: false,
-      message: e.message || e,
+      message: e.message || e
     });
   }
 };
@@ -53,7 +55,7 @@ export const isAuth = async (req: Request, res: Response) => {
     const user_token = await tokenService.getTokenFromHeader(req);
 
     // verify that access token isn't expired
-    tokenService.verifyAccessToken(user_token); 
+    tokenService.verifyAccessToken(user_token);
 
     res.json({
       success: true
@@ -81,7 +83,8 @@ export const refreshToken = async (req: Request, res: Response) => {
       throw new Error('User not found');
     }
 
-    const { new_access_token, new_refresh_token } = await tokenService.updateToken(user, req);
+    const { new_access_token, new_refresh_token } =
+      await tokenService.updateToken(user, req);
 
     await tokenService.setRefreshTokenCookie(res, new_refresh_token);
 

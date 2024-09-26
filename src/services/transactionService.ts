@@ -48,6 +48,4 @@ export default class TransactionService {
     endDate.setHours(23, 59, 59, 999);
     return await Transaction.query().whereBetween('date', [startDate, endDate]);
   }
-
-
 }

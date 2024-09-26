@@ -49,6 +49,6 @@ export default class UserService {
   async getUserByToken(token: Token) {
     return User.query().findOne({
       id: token.user_id
-    })
-  };
+    });
+  }
 }

@@ -8,9 +8,9 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     const tokenService = new TokenService();
 
     const user_token = await tokenService.getTokenFromHeader(req);
-    
+
     tokenService.verifyAccessToken(user_token);
-    
+
     next();
   } catch (e: any) {
     res
@@ -37,7 +37,7 @@ export const authAdmin = async (
     tokenService.verifyAccessToken(user_token);
 
     const user = await userService.getUserByToken(user_token);
-    
+
     if (!user?.is_admin) {
       throw new Error('Access denied');
     }

@@ -121,31 +121,6 @@ export const getTransactionById = async (req: Request, res: Response) => {
   }
 };
 
-export const getStatistics = async (req: Request, res: Response) => {
-  try {
-    const { startRange, endRange } = req.body;
-    const { query } = req;
-
-    const page = (parseInt(query.page as string) || 1) - 1;
-    const perPage = parseInt(query.perPage as string) || 10;
-
-    const dates = convertToDate([startRange, endRange]);
-
-    const transactions = await Transaction.query()
-      .page(page, perPage)
-      .whereBetween('date_added', [dates[0], dates[1]]);
-
-    if (!transactions) {
-      res.status(404).json({ message: 'Transaction not found' });
-    } else {
-      res.json(transactions);
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error fetching transaction' });
-  }
-};
-
 export const createTransaction = async (req: Request, res: Response) => {
   try {
     const { wallet_id, amount, type } = req.body;
@@ -243,5 +218,112 @@ export const deleteTransaction = async (req: Request, res: Response) => {
     res
       .status(500)
       .json({ message: error.nativeError?.sqlMessage || error.message });
+  }
+};
+
+export const getStatistics = async (req: Request, res: Response) => {
+  try {
+    const { startRange, endRange } = req.body;
+    const { query } = req;
+
+    const page = (parseInt(query.page as string) || 1) - 1;
+    const perPage = parseInt(query.perPage as string) || 10;
+
+    const dates = convertToDate([startRange, endRange]);
+
+    const transactions = await Transaction.query()
+      .page(page, perPage)
+      .whereBetween('date_added', [dates[0], dates[1]]);
+
+    if (!transactions) {
+      res.status(404).json({ message: 'Transaction not found' });
+    } else {
+      res.json(transactions);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching transaction' });
+  }
+};
+
+export const getYearlyStatistics = async (req: Request, res: Response) => {
+  const { year, tags } = req.query;
+
+  const startDate = new Date(`${year}-01-01`);
+  const endDate = new Date(`${year}-12-31`);
+
+  const monthlyData: any = Array(12)
+    .fill(0)
+    .map((_) => ({ income: 0, expense: 0 }));
+
+  try {
+    let query = Transaction.query().whereBetween('date_added', [
+      startDate,
+      endDate
+    ]);
+
+    if (tags) {
+      const tagList = `${tags}`.split(',');
+      query = query.whereIn('tag', tagList);
+    }
+    const transactions = await query;
+
+    for (const transaction of transactions) {
+      const monthNumber = transaction.date_added.getMonth();
+
+      monthlyData[monthNumber][transaction.type] += transaction.amount;
+    }
+
+    res.json({ yearly_statistics: monthlyData });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getMonthlyStatistics = async (req: Request, res: Response) => {
+  const { start_date, tags } = req.query;
+
+  if (!start_date) {
+    res.status(400).json({ message: 'start_date is required' });
+    return;
+  }
+
+  const startDate = new Date(start_date.toString());
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+
+  const weeklyData: any = Array(4)
+    .fill(0)
+    .map((_) => ({ income: 0, expense: 0 }));
+
+  try {
+    let query = Transaction.query().whereBetween('date_added', [
+      startDate,
+      endDate
+    ]);
+
+    if (tags) {
+      const tagList = tags.toString().split(',');
+      query = query.whereIn('tag', tagList);
+    }
+
+    const transactions = await query;
+    console.log(
+      transactions.every(
+        (transaction) =>
+          transaction?.type === 'expense' || transaction?.type === 'income'
+      )
+    );
+
+    for (const transaction of transactions) {
+      const weekNumber = Math.floor(transaction.date_added.getDate() / 7);
+
+      weeklyData[weekNumber > 3 ? 3 : weekNumber][transaction.type] +=
+        transaction.amount;
+    }
+
+    res.json({ monthly_statistics: weeklyData });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
   }
 };

@@ -6,11 +6,11 @@ import { WalletService } from '@/services';
 export const getWallets = async (req: Request, res: Response) => {
   try {
     const { query } = req;
-  
+
     const page = (parseInt(query.page as string) || 1) - 1;
     const perPage = parseInt(query.perPage as string) || 10;
 
-     const wallets = await Wallet.query().page(page, perPage);
+    const wallets = await Wallet.query().page(page, perPage);
 
     res.json(wallets);
   } catch (error) {

@@ -1,4 +1,3 @@
-
 import { Request, Response } from 'express';
 import { UAParser } from 'ua-parser-js';
 import jwt from 'jsonwebtoken';
@@ -114,18 +113,22 @@ export default class TokenService {
   }
 
   async revokeRefreshToken(refreshToken: string) {
-    await Token.query()
-      .where('refresh_token', refreshToken)
-      .delete();
+    await Token.query().where('refresh_token', refreshToken).delete();
   }
 
-  async setRefreshTokenCookie(res: Response, refreshToken: string, options = {}) {
+  async setRefreshTokenCookie(
+    res: Response,
+    refreshToken: string,
+    options = {}
+  ) {
     const defaultOptions = {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true
     };
 
-    const cookieOptions = Object.keys(options).length ? options : defaultOptions;
+    const cookieOptions = Object.keys(options).length
+      ? options
+      : defaultOptions;
 
     res.cookie('refreshToken', refreshToken, cookieOptions);
   }
