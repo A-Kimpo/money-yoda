@@ -8,12 +8,14 @@ export async function seed(knex: Knex): Promise<void> {
   const users: UserType[] = [
     {
       id: 1,
+      username: 'admin',
       email: 'admin@email.com',
       password: await argon2i.hash('admin', crypto.randomBytes(32)),
       is_admin: true
     },
     {
       id: 2,
+      username: 'user',
       email: 'user@email.com',
       password: await argon2i.hash('user', crypto.randomBytes(32))
     }
