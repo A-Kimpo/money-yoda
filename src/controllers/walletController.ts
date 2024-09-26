@@ -1,11 +1,16 @@
 import { Request, Response } from 'express';
-import { User, Wallet } from '../models';
+import { User, Wallet } from '@/models';
 
 import { WalletService } from '@/services';
 
 export const getWallets = async (req: Request, res: Response) => {
   try {
-    const wallets = await Wallet.query();
+    const { query } = req;
+  
+    const page = (parseInt(query.page as string) || 1) - 1;
+    const perPage = parseInt(query.perPage as string) || 10;
+
+     const wallets = await Wallet.query().page(page, perPage);
 
     res.json(wallets);
   } catch (error) {
@@ -17,7 +22,15 @@ export const getWallets = async (req: Request, res: Response) => {
 export const getWalletsByUserId = async (req: Request, res: Response) => {
   try {
     const { id: user_id } = req.params;
-    const wallets = await Wallet.query().select('*').where('user_id', user_id);
+    const { query } = req;
+
+    const page = (parseInt(query.page as string) || 1) - 1;
+    const perPage = parseInt(query.perPage as string) || 10;
+
+    const wallets = await Wallet.query()
+      .select('*')
+      .page(page, perPage)
+      .where('user_id', user_id);
 
     res.json(wallets);
   } catch (error) {
@@ -53,7 +66,7 @@ export const createWallet = async (req: Request, res: Response) => {
     const wallet = await Wallet.query().insert({
       name: walletName,
       user_id: user.id,
-      balance: 0,
+      balance: 0
     });
 
     res.json(wallet);
@@ -67,7 +80,6 @@ export const updateWallet = async (req: Request, res: Response) => {
   try {
     // const { id } = req.params;
     // const wallet = await Wallet.query().update(id);
-
     // res.json(wallet);
   } catch (error) {
     console.error(error);
@@ -99,4 +111,4 @@ export const getBalance = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({ message: 'Error fetching wallet balance' });
   }
-}
+};

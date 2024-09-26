@@ -1,3 +1,4 @@
 import isEmpty from "./isEmpty";
+import convertToDate from './convertToDate';
 
-export { isEmpty };
+export { isEmpty, convertToDate };

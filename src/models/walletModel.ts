@@ -14,7 +14,7 @@ export default class Wallet extends Model {
   static get jsonSchema() {
     return {
       type: 'object',
-      // required: ['wallet_id', 'name'],
+      required: ['user_id', 'name'],
       properties: {
         id: { type: 'integer' },
         user_id: { type: 'integer' },

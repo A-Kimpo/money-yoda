@@ -11,7 +11,7 @@ export default class Transaction extends Model {
   description?: string;
   date_added!: Date;
   date_modified!: Date;
-  
+
   static get tableName() {
     return 'transactions';
   }
@@ -25,11 +25,9 @@ export default class Transaction extends Model {
         wallet_id: { type: 'integer' },
         type: { type: 'string' },
         amount: { type: 'number' },
-        tag: { type: 'string' },
-        category: { type: 'string' },
-        description: { type: 'string' },
-        date_added: { type: 'string' },
-        date_modified: { type: 'string' }
+        tag: { type: 'string', nullable: true },
+        category: { type: 'string', nullable: true },
+        description: { type: 'string', nullable: true }
       }
     };
   }

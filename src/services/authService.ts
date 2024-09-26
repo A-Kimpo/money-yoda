@@ -1,6 +1,5 @@
 import { argon2i } from 'argon2-ffi';
 
-import { User } from '@/models';
 import { UserService } from '@/services';
 import { isEmpty } from '@/utils';
 

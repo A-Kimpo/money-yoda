@@ -1,37 +1,38 @@
-import { Response } from 'express';
-import { UAParser } from 'ua-parser-js';
-import jwt from 'jsonwebtoken';
+import { Transaction, Wallet } from '@/models';
 
-import { Wallet } from '@/models';
-import { TransactionService } from '@/services';
-import config from '@/config';
-
-export default class WalletService {  
+export default class WalletService {
   async getBalance(walletId: number) {
     const wallet = await Wallet.query().findById(walletId);
     if (!wallet) throw new Error('Wallet not found');
-    
+
     return wallet.balance;
   }
 
-  // async createWallet(req: any, res: Response) {
-  //   try {
-  //     const { name: walletName, user_id } = req.body;
+  async updateBalance(
+    wallet: Wallet,
+    transaction: Transaction,
+    operation: string
+  ) {
+    const { wallet_id, type, amount } = transaction;
 
-  //     const user = await User.query().findOne({ id: user_id });
+    const amountByOperation: Record<string, number> = {
+      add: +amount,
+      delete: -amount
+    };
 
-  //     if (!user) throw new Error('User not found');
+    // Calculate the new wallet balance
+    const resultByType: Record<string, number> = {
+      income: wallet.balance + amountByOperation[operation],
+      expense: wallet.balance - amountByOperation[operation]
+    };
+    const newBalance = resultByType[type];
 
-  //     const wallet = await User.query().insert({
-  //       name: walletName,
-  //       user_id: user.id,
-  //       balance: 0,
-  //     });
+    // Update the wallet balance
+    await Wallet.query().updateAndFetchById(wallet_id, {
+      ...wallet,
+      balance: newBalance
+    });
 
-  //     res.json(wallet);
-  //   } catch (error) {
-  //     console.error(error);
-  //     res.status(500).json({ message: 'Error creating wallet' });
-  //   }
-  // }
+    return newBalance;
+  }
 }

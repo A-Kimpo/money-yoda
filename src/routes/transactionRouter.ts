@@ -6,6 +6,7 @@ import {
   updateTransaction,
   deleteTransaction,
   getTransactionsByTag,
+  deleteTransactionTag,
   getTransactionsByWallet,
   getTransactionsByType,
   getStatistics
@@ -16,6 +17,7 @@ const router = Router();
 router.get('', getAllTransactions);
 router.get('/:id', getTransactionById);
 router.get('/tag/:tag', getTransactionsByTag);
+router.delete('/delete/tag/:id', deleteTransactionTag);
 router.get('/wallet/:wallet_id', getTransactionsByWallet);
 router.get('/type/:type', getTransactionsByType);
 router.post('/create', createTransaction);
