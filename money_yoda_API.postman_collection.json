@@ -49,9 +49,10 @@
 									"\r",
 									"if (!response.data) return;\r",
 									"\r",
-									"const { access_token } = response.data;\r",
+									"const { id, access_token } = response.data;\r",
 									"\r",
 									"pm.collectionVariables.set(\"access_token\", access_token);\r",
+									"pm.collectionVariables.set(\"user_id\", id);\r",
 									""
 								],
 								"type": "text/javascript",
@@ -444,14 +445,14 @@
 							]
 						},
 						"url": {
-							"raw": "{{host}}/api/user/2",
+							"raw": "{{host}}/api/user/3",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"2"
+								"3"
 							]
 						}
 					},
@@ -463,14 +464,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/2",
+							"raw": "{{host}}/api/user/3",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"2"
+								"3"
 							]
 						}
 					},
@@ -511,61 +512,95 @@
 			]
 		},
 		{
-			"name": "Wallet",
+			"name": "Statistics",
 			"item": [
 				{
-					"name": "Transactions",
-					"item": [
-						{
-							"name": "Add income",
-							"request": {
-								"method": "POST",
-								"header": []
-							},
-							"response": []
-						},
-						{
-							"name": "Add expense",
-							"request": {
-								"method": "POST",
-								"header": []
-							},
-							"response": []
+					"name": "monthStatistic",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/transactions/statistics/monthly?start_date=2023-09-23",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"statistics",
+								"monthly"
+							],
+							"query": [
+								{
+									"key": "start_date",
+									"value": "2023-09-23"
+								}
+							]
 						}
-					]
+					},
+					"response": []
 				},
+				{
+					"name": "yearStatistic",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/transactions/statistics/yearly?year=2024",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"statistics",
+								"yearly"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2024"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
 				{
 					"name": "Tags",
 					"item": [
 						{
-							"name": "Get All tags",
-							"request": {
-								"method": "GET",
-								"header": []
-							},
-							"response": []
-						},
-						{
-							"name": "Get tag by name",
-							"request": {
-								"method": "GET",
-								"header": []
-							},
-							"response": []
-						},
-						{
 							"name": "Add tag",
 							"request": {
-								"method": "POST",
-								"header": []
-							},
-							"response": []
-						},
-						{
-							"name": "Update tag",
-							"request": {
 								"method": "PUT",
-								"header": []
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "tag",
+											"value": "tag1",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/transactions/update/1",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"transactions",
+										"update",
+										"1"
+									]
+								}
 							},
 							"response": []
 						},
@@ -573,17 +608,425 @@
 							"name": "Remove tag",
 							"request": {
 								"method": "DELETE",
-								"header": []
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/transactions/delete/tag/6",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"transactions",
+										"delete",
+										"tag",
+										"6"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit tag",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "tag",
+											"value": "qwe",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/transactions/update/13",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"transactions",
+										"update",
+										"13"
+									]
+								}
 							},
 							"response": []
 						}
 					]
 				},
 				{
-					"name": "Get balance",
+					"name": "Add income",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "wallet_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "income",
+									"type": "text"
+								},
+								{
+									"key": "amount",
+									"value": "152000",
+									"type": "text"
+								},
+								{
+									"key": "tag",
+									"value": "salary",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "until the end of the month",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/transactions/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add expense",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "wallet_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "expense",
+									"type": "text"
+								},
+								{
+									"key": "amount",
+									"value": "1234",
+									"type": "text"
+								},
+								{
+									"key": "tag",
+									"value": "food",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "vegetables, fruits",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/transactions/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get by id",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/transactions/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/transactions",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by tag",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/transactions/tag/salary",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"tag",
+								"salary"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by type",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "type",
+									"value": "income",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/transactions/type/income",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"type",
+								"income"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete transaction",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/transactions/delete/8",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"delete",
+								"8"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Wallet",
+			"item": [
+				{
+					"name": "Get wallet by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/wallets/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create wallet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "Wallet",
+									"type": "text"
+								},
+								{
+									"key": "user_id",
+									"value": "{{user_id}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/wallets/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete wallet by id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "wallet2",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "admin@email.com",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/wallets/delete/2",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"delete",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all wallets",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{host}}/api/wallets",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"wallets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all user wallets",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{host}}/api/wallets/user/{{user_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"user",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get balance by wallet id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/wallets/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"1"
+							]
+						}
 					},
 					"response": []
 				}
@@ -641,6 +1084,10 @@
 		{
 			"key": "testIncrement",
 			"value": "1"
+		},
+		{
+			"key": "user_id",
+			"value": ""
 		},
 		{
 			"key": "access_token",
