@@ -464,14 +464,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/3",
+							"raw": "{{host}}/api/user/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"3"
+								"1"
 							]
 						}
 					},
@@ -512,7 +512,7 @@
 			]
 		},
 		{
-			"name": "Statistics",
+			"name": "Statistics (need auth)",
 			"item": [
 				{
 					"name": "monthStatistic",
@@ -520,7 +520,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/transactions/statistics/monthly?start_date=2023-09-23",
+							"raw": "{{host}}/api/transactions/statistics/monthly?start_date=2023-11-23",
 							"host": [
 								"{{host}}"
 							],
@@ -533,7 +533,7 @@
 							"query": [
 								{
 									"key": "start_date",
-									"value": "2023-09-23"
+									"value": "2023-11-23"
 								}
 							]
 						}
@@ -566,10 +566,42 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{access_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
-			"name": "Transactions",
+			"name": "Transactions (need auth)",
 			"item": [
 				{
 					"name": "Tags",
@@ -610,7 +642,7 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{host}}/api/transactions/delete/tag/6",
+									"raw": "{{host}}/api/transactions/delete/tag/1",
 									"host": [
 										"{{host}}"
 									],
@@ -619,7 +651,7 @@
 										"transactions",
 										"delete",
 										"tag",
-										"6"
+										"1"
 									]
 								}
 							},
@@ -641,7 +673,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{host}}/api/transactions/update/13",
+									"raw": "{{host}}/api/transactions/update/1",
 									"host": [
 										"{{host}}"
 									],
@@ -649,7 +681,7 @@
 										"api",
 										"transactions",
 										"update",
-										"13"
+										"1"
 									]
 								}
 							},
@@ -798,15 +830,19 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/transactions/tag/salary",
+							"raw": "{{host}}/api/transactions?tag=Food",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
-								"transactions",
-								"tag",
-								"salary"
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "tag",
+									"value": "Food"
+								}
 							]
 						}
 					},
@@ -832,15 +868,19 @@
 							]
 						},
 						"url": {
-							"raw": "{{host}}/api/transactions/type/income",
+							"raw": "{{host}}/api/transactions?type=income",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
-								"transactions",
-								"type",
-								"income"
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "income"
+								}
 							]
 						}
 					},
@@ -852,7 +892,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/transactions/delete/8",
+							"raw": "{{host}}/api/transactions/delete/1",
 							"host": [
 								"{{host}}"
 							],
@@ -860,16 +900,48 @@
 								"api",
 								"transactions",
 								"delete",
-								"8"
+								"1"
 							]
 						}
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{access_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
-			"name": "Wallet",
+			"name": "Wallet (need auth)",
 			"item": [
 				{
 					"name": "Get wallet by id",
@@ -945,7 +1017,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{host}}/api/wallets/delete/2",
+							"raw": "{{host}}/api/wallets/delete/3",
 							"host": [
 								"{{host}}"
 							],
@@ -953,7 +1025,7 @@
 								"api",
 								"wallets",
 								"delete",
-								"2"
+								"3"
 							]
 						}
 					},
@@ -1017,18 +1089,51 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/wallets/1",
+							"raw": "{{host}}/api/wallets/balance/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"wallets",
+								"balance",
 								"1"
 							]
 						}
 					},
 					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{access_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		},
