@@ -1,16 +1,19 @@
-import e, { Request, Response } from 'express';
-import { Wallet, Transaction } from '@/models';
-import { WalletService } from '@/services';
-import { convertToDate } from '@/utils';
+import { Request, Response } from 'express';
 
-export const getAllTransactions = async (req: Request, res: Response) => {
+import { Transaction } from '@/models';
+import { TransactionService, WalletService } from '@/services';
+import { paginate, filterByQuery } from '@/utils';
+
+export const getTransactions = async (req: Request, res: Response) => {
   try {
-    const { query } = req;
+    const { page, perPage, ...restQuery } = req.query;
 
-    const page = (parseInt(query.page as string) || 1) - 1;
-    const perPage = parseInt(query.perPage as string) || 10;
+    const queryBuilder = Transaction.query();
 
-    const transactions = await Transaction.query().page(page, perPage);
+    filterByQuery(restQuery, queryBuilder);
+    paginate({ page, perPage }, queryBuilder)
+
+    const transactions = await queryBuilder;
 
     res.json(transactions);
   } catch (error) {
@@ -19,102 +22,14 @@ export const getAllTransactions = async (req: Request, res: Response) => {
   }
 };
 
-export const getTransactionsByTag = async (req: Request, res: Response) => {
-  try {
-    const { query } = req;
-    const { tag } = req.params;
-
-    const page = (parseInt(query.page as string) || 1) - 1;
-    const perPage = parseInt(query.perPage as string) || 10;
-
-    const transactions = await Transaction.query()
-      .page(page, perPage)
-      .where('tag', tag);
-
-    res.json(transactions);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error fetching transactions by tag' });
-  }
-};
-
-export const deleteTransactionTag = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    // Check if the transaction exists
-    const transaction = await Transaction.query().findById(id);
-
-    if (!transaction) {
-      res.status(404).json({ message: 'Transaction not found' });
-      return;
-    }
-
-    // Update the transaction in the database
-    const updatedTransaction = await Transaction.query().updateAndFetchById(
-      id,
-      { ...transaction, tag: '' }
-    );
-
-    if (updatedTransaction) {
-      res.json(updatedTransaction);
-    } else {
-      res.status(404).json({ message: 'Transaction not updated' });
-    }
-  } catch (error: any) {
-    console.error(error);
-    res.status(500).json({
-      message: error.nativeError?.sqlMessage || error.message
-    });
-  }
-};
-export const getTransactionsByWallet = async (req: Request, res: Response) => {
-  try {
-    const { query } = req;
-    const { wallet_id } = req.params;
-
-    const page = (parseInt(query.page as string) || 1) - 1;
-    const perPage = parseInt(query.perPage as string) || 10;
-
-    const transactions = await Transaction.query()
-      .page(page, perPage)
-      .where('wallet_id', wallet_id);
-
-    res.json(transactions);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error fetching transactions by wallet' });
-  }
-};
-export const getTransactionsByType = async (req: Request, res: Response) => {
-  try {
-    const { type } = req.params;
-    const { query } = req;
-
-    const page = (parseInt(query.page as string) || 1) - 1;
-    const perPage = parseInt(query.perPage as string) || 10;
-
-    const transactions = await Transaction.query()
-      .page(page, perPage)
-      .where('type', type);
-
-    res.json(transactions);
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
 export const getTransactionById = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id;
-    const transaction = await Transaction.query().findById(id);
+    const { id } = req.params;
+    const transactionService = new TransactionService();
 
-    if (!transaction) {
-      res.status(404).json({ message: 'Transaction not found' });
-    } else {
-      res.json(transaction);
-    }
+    const transaction = await transactionService.getTransactionById(+id);
+
+    res.json(transaction);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching transaction' });
@@ -124,14 +39,10 @@ export const getTransactionById = async (req: Request, res: Response) => {
 export const createTransaction = async (req: Request, res: Response) => {
   try {
     const { wallet_id, amount, type } = req.body;
+    const walletService = new WalletService();
 
     // Check if the wallet exists
-    const wallet = await Wallet.query().findById(wallet_id);
-
-    if (!wallet) {
-      res.status(404).json({ message: 'Wallet not found' });
-      return;
-    }
+    const wallet = await walletService.getWalletById(wallet_id);
 
     // Add the new transaction to the database
     const transaction = await Transaction.query().insert({
@@ -140,10 +51,6 @@ export const createTransaction = async (req: Request, res: Response) => {
       wallet_id: +wallet.id,
       amount: +amount
     });
-
-    // Update the wallet balance
-    const walletService = new WalletService();
-    await walletService.updateBalance(wallet, transaction, 'add');
 
     res.json(transaction);
   } catch (error: any) {
@@ -156,15 +63,11 @@ export const createTransaction = async (req: Request, res: Response) => {
 
 export const updateTransaction = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
+    const transactionService = new TransactionService();
 
     // Check if the transaction exists
-    const transaction = await Transaction.query().findById(id);
-
-    if (!transaction) {
-      res.status(404).json({ message: 'Transaction not found' });
-      return;
-    }
+    const transaction = await transactionService.getTransactionById(+id);
 
     // Update the transaction in the database
     const updatedTransaction = await Transaction.query().updateAndFetchById(
@@ -188,29 +91,17 @@ export const updateTransaction = async (req: Request, res: Response) => {
 export const deleteTransaction = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const transactionService = new TransactionService();
+    const walletService = new WalletService();
 
     // Check if the transaction exists
-    const transaction = await Transaction.query().findById(id);
-
-    if (!transaction) {
-      res.status(404).json({ message: 'Transaction not found' });
-      return;
-    }
+    const transaction = await transactionService.getTransactionById(+id);
 
     // Check if the wallet exists
-    const wallet = await Wallet.query().findById(transaction.wallet_id);
-
-    if (!wallet) {
-      res.status(404).json({ message: 'Wallet not found' });
-      return;
-    }
-
-    // Update the wallet balance
-    const walletService = new WalletService();
-    await walletService.updateBalance(wallet, transaction, 'delete');
+    await walletService.getWalletById(transaction.wallet_id);
 
     // Delete the transaction from the database
-    await Transaction.query().deleteById(id);
+    await transactionService.deleteById(+id);
 
     res.json({ message: 'Transaction deleted' });
   } catch (error: any) {
@@ -221,33 +112,35 @@ export const deleteTransaction = async (req: Request, res: Response) => {
   }
 };
 
-export const getStatistics = async (req: Request, res: Response) => {
+export const deleteTransactionTag = async (req: Request, res: Response) => {
   try {
-    const { startRange, endRange } = req.body;
-    const { query } = req;
+    const { id } = req.params;
 
-    const page = (parseInt(query.page as string) || 1) - 1;
-    const perPage = parseInt(query.perPage as string) || 10;
+    // Check if the transaction exists
+    const transactionService = new TransactionService();
+    const transaction = await transactionService.getTransactionById(+id);
 
-    const dates = convertToDate([startRange, endRange]);
+    // Update the transaction in the database
+    const updatedTransaction = await Transaction.query().updateAndFetchById(
+      id,
+      { ...transaction, tag: '' }
+    );
 
-    const transactions = await Transaction.query()
-      .page(page, perPage)
-      .whereBetween('date_added', [dates[0], dates[1]]);
-
-    if (!transactions) {
-      res.status(404).json({ message: 'Transaction not found' });
+    if (updatedTransaction) {
+      res.json(updatedTransaction);
     } else {
-      res.json(transactions);
+      res.status(404).json({ message: 'Transaction not updated' });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    res.status(500).json({ message: 'Error fetching transaction' });
+    res.status(500).json({
+      message: error.nativeError?.sqlMessage || error.message
+    });
   }
 };
 
 export const getYearlyStatistics = async (req: Request, res: Response) => {
-  const { year, tags } = req.query;
+  const { wallet_id, year, tags }: Record<string, any> = req.query;
 
   const startDate = new Date(`${year}-01-01`);
   const endDate = new Date(`${year}-12-31`);
@@ -262,10 +155,15 @@ export const getYearlyStatistics = async (req: Request, res: Response) => {
       endDate
     ]);
 
+    if (wallet_id) {
+      query = query.where('wallet_id', wallet_id);
+    }
+
     if (tags) {
       const tagList = `${tags}`.split(',');
       query = query.whereIn('tag', tagList);
     }
+
     const transactions = await query;
 
     for (const transaction of transactions) {
@@ -279,9 +177,8 @@ export const getYearlyStatistics = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 export const getMonthlyStatistics = async (req: Request, res: Response) => {
-  const { start_date, tags } = req.query;
+  const { wallet_id, start_date, tags }: Record<string, any> = req.query;
 
   if (!start_date) {
     res.status(400).json({ message: 'start_date is required' });
@@ -302,18 +199,16 @@ export const getMonthlyStatistics = async (req: Request, res: Response) => {
       endDate
     ]);
 
+    if (wallet_id) {
+      query = query.where('wallet_id', wallet_id);
+    }
+
     if (tags) {
       const tagList = tags.toString().split(',');
       query = query.whereIn('tag', tagList);
     }
 
     const transactions = await query;
-    console.log(
-      transactions.every(
-        (transaction) =>
-          transaction?.type === 'expense' || transaction?.type === 'income'
-      )
-    );
 
     for (const transaction of transactions) {
       const weekNumber = Math.floor(transaction.date_added.getDate() / 7);

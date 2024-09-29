@@ -1,5 +1,7 @@
 import { Model } from 'objection';
+
 import { Wallet } from '@/models';
+import { WalletService } from '@/services';
 
 export default class Transaction extends Model {
   id!: number;
@@ -36,8 +38,18 @@ export default class Transaction extends Model {
     this.date_added = new Date();
   }
 
-  async $beforeUpdate(context: any) {
+  async $beforeUpdate() {
     this.date_modified = new Date();
+  }
+
+  async $afterInsert() {
+    const walletService = new WalletService();
+    await walletService.updateBalance(this);
+  }
+
+  async $afterDelete() {
+    const walletService = new WalletService();
+    await walletService.updateBalance(this);
   }
 
   static get relationMappings() {

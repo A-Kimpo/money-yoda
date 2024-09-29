@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import {
   getWallets,
-  getWalletsByUserId,
-  getWallet,
+  getUserWallets,
+  getWalletById,
   getBalance,
   createWallet,
   updateWallet,
@@ -12,9 +12,9 @@ import {
 const router = Router();
 
 router.get('', getWallets);
-router.get('/user/:id', getWalletsByUserId);
+router.get('/:id', getWalletById);
+router.get('/user/:id', getUserWallets);
 router.get('/balance/:id', getBalance);
-router.get('/:id', getWallet);
 router.post('/create', createWallet);
 router.put('/update/:id', updateWallet);
 router.delete('/delete/:id', deleteWallet);

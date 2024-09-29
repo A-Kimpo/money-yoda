@@ -1,4 +1,6 @@
 import { Router } from 'express';
+
+import { auth } from '@/middlewares';
 import authRouter from './authRouter';
 import userRouter from './userRouter';
 import walletRouter from './walletRouter';
@@ -9,7 +11,7 @@ const router = Router();
 router
   .use('/auth', authRouter)
   .use('/user', userRouter)
-  .use('/wallets', walletRouter)
-  .use('/transactions', transactionRouter);
+  .use('/wallets', auth, walletRouter)
+  .use('/transactions', auth, transactionRouter);
 
 export default router;

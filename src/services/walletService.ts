@@ -1,31 +1,46 @@
 import { Transaction, Wallet } from '@/models';
 
 export default class WalletService {
-  async getBalance(walletId: number) {
-    const wallet = await Wallet.query().findById(walletId);
+  async getBalance(wallet_id: number) {
+    const wallet = await Wallet.query().findById(wallet_id);
     if (!wallet) throw new Error('Wallet not found');
 
-    return wallet.balance;
+    const transactions = await Transaction.query().where('wallet_id', wallet_id);
+    const balance = transactions.reduce((acc, { type, amount }) => {
+      const _amount = {
+        income: +amount,
+        expense: -amount
+      }[type];
+
+      if (!_amount) {
+        throw new Error('An unexpected error has occurred');
+      }
+
+      return acc + _amount;
+    }, 0);
+
+    return balance;
   }
 
-  async updateBalance(
-    wallet: Wallet,
-    transaction: Transaction,
-    operation: string
-  ) {
+
+  async updateBalance(transaction: Transaction) {
     const { wallet_id, type, amount } = transaction;
 
-    const amountByOperation: Record<string, number> = {
-      add: +amount,
-      delete: -amount
-    };
+    // Check if the wallet exists
+    const wallet = await Wallet.query().findById(wallet_id);
+    if (!wallet) throw new Error('Wallet not found');
 
     // Calculate the new wallet balance
-    const resultByType: Record<string, number> = {
-      income: wallet.balance + amountByOperation[operation],
-      expense: wallet.balance - amountByOperation[operation]
-    };
-    const newBalance = resultByType[type];
+    const _amount = {
+      income: +amount,
+      expense: -amount
+    }[type];
+
+    if (!_amount) {
+      throw new Error('Invalid transaction type');
+    }
+
+    const newBalance = wallet.balance + _amount;
 
     // Update the wallet balance
     await Wallet.query().updateAndFetchById(wallet_id, {
@@ -34,5 +49,13 @@ export default class WalletService {
     });
 
     return newBalance;
+  }
+
+  async getWalletById(id: number) {
+    const wallet = await Wallet.query().findById(id);
+
+    if (!wallet) throw new Error('Wallet not found');
+
+    return wallet;
   }
 }

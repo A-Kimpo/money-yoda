@@ -1,16 +1,16 @@
 import { Request, Response } from 'express';
-import { User, Wallet } from '@/models';
 
+import { User, Wallet } from '@/models';
 import { WalletService } from '@/services';
+import { paginate } from '@/utils';
 
 export const getWallets = async (req: Request, res: Response) => {
   try {
-    const { query } = req;
+    const queryBuilder = Wallet.query();
 
-    const page = (parseInt(query.page as string) || 1) - 1;
-    const perPage = parseInt(query.perPage as string) || 10;
+    paginate(req.query, queryBuilder)
 
-    const wallets = await Wallet.query().page(page, perPage);
+    const wallets = await queryBuilder;
 
     res.json(wallets);
   } catch (error) {
@@ -19,18 +19,15 @@ export const getWallets = async (req: Request, res: Response) => {
   }
 };
 
-export const getWalletsByUserId = async (req: Request, res: Response) => {
+export const getUserWallets = async (req: Request, res: Response) => {
   try {
     const { id: user_id } = req.params;
-    const { query } = req;
 
-    const page = (parseInt(query.page as string) || 1) - 1;
-    const perPage = parseInt(query.perPage as string) || 10;
+    const queryBuilder = Wallet.query().where('user_id', user_id);
 
-    const wallets = await Wallet.query()
-      .select('*')
-      .page(page, perPage)
-      .where('user_id', user_id);
+    paginate(req.query, queryBuilder);
+
+    const wallets = await queryBuilder;
 
     res.json(wallets);
   } catch (error) {
@@ -39,16 +36,14 @@ export const getWalletsByUserId = async (req: Request, res: Response) => {
   }
 };
 
-export const getWallet = async (req: Request, res: Response) => {
+export const getWalletById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const wallet = await Wallet.query().findById(id);
+    const walletService = new WalletService();
 
-    if (!wallet) {
-      res.status(404).json({ message: 'Wallet not found' });
-    } else {
-      res.json(wallet);
-    }
+    const wallet = await walletService.getWalletById(+id);
+
+    res.json(wallet);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching wallet' });
@@ -78,19 +73,41 @@ export const createWallet = async (req: Request, res: Response) => {
 
 export const updateWallet = async (req: Request, res: Response) => {
   try {
-    // const { id } = req.params;
-    // const wallet = await Wallet.query().update(id);
-    // res.json(wallet);
-  } catch (error) {
+    const { id } = req.params;
+    const { name } = req.body;
+    const walletService = new WalletService();
+
+    // Check if the wallet exists
+    const wallet = await walletService.getWalletById(+id);
+
+    // Update the wallet in the database
+    const updatedWallet = await Wallet.query().updateAndFetchById(
+      id,
+      { ...wallet, name }
+    );
+
+    if (updatedWallet) {
+      res.json(updatedWallet);
+    } else {
+      res.status(404).json({ message: 'Transaction not updated' });
+    }
+  } catch (error: any) {
     console.error(error);
-    res.status(500).json({ message: 'Error updating wallet' });
+    res.status(500).json({
+      message: error.nativeError?.sqlMessage || error.message
+    });
   }
 };
 
 export const deleteWallet = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const walletService = new WalletService();
 
+    // Check if the wallet exists
+    await walletService.getWalletById(+id);
+
+    // Delete the wallet from the database
     await Wallet.query().deleteById(id);
 
     res.json({ message: 'Wallet deleted' });

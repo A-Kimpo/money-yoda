@@ -12,8 +12,8 @@ const router = Router();
 
 router.get('', authAdmin, getAllUsers);
 router.get('/:user_id', auth, getUserById);
+router.post('/create', create);
 router.put('/:user_id', authAdmin, update);
 router.delete('/:user_id', authAdmin, remove);
-router.post('/create', create);
 
 export default router;

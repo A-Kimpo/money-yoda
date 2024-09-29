@@ -2,24 +2,6 @@ import { User } from '@/models';
 import { Token } from '@/models';
 
 export default class UserService {
-  async checkExistUser({ email, username }: User) {
-    const users = await User.query()
-      .select('users.email')
-      .where('users.email', '=', email)
-      .orWhere('users.username', '=', username);
-
-    return !!users.length;
-  }
-  async createUser(user: User) {
-    return User.query().insertAndFetch(user);
-  }
-  async deleteUser(id: number | string) {
-    const user = await this.getUserById(id);
-
-    if (user.is_admin) throw new Error('Admin cannot be deleted');
-
-    return User.query().deleteById(id);
-  }
   async getAllUsers() {
     const users = await User.query();
 
@@ -50,5 +32,20 @@ export default class UserService {
     return User.query().findOne({
       id: token.user_id
     });
+  }
+  async checkExistUser({ email, username }: User) {
+    const user = await User.query().where({ email, username });
+
+    return !!user.length;
+  }
+  async createUser(user: User) {
+    return User.query().insertAndFetch(user);
+  }
+  async deleteUser(id: number | string) {
+    const user = await this.getUserById(id);
+
+    if (user.is_admin) throw new Error('Admin cannot be deleted');
+
+    return User.query().deleteById(id);
   }
 }
