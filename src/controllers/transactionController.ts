@@ -11,7 +11,7 @@ export const getTransactions = async (req: Request, res: Response) => {
     const queryBuilder = Transaction.query();
 
     filterByQuery(restQuery, queryBuilder);
-    paginate({ page, perPage }, queryBuilder)
+    paginate({ page, perPage }, queryBuilder);
 
     const transactions = await queryBuilder;
 
@@ -141,7 +141,7 @@ export const deleteTransactionTag = async (req: Request, res: Response) => {
 
 export const getYearlyStatistics = async (req: Request, res: Response) => {
   const { wallet_id, year, tags }: Record<string, any> = req.query;
-
+  const { id: user_id } = (req as any).user;
   const startDate = new Date(`${year}-01-01`);
   const endDate = new Date(`${year}-12-31`);
 
@@ -150,10 +150,9 @@ export const getYearlyStatistics = async (req: Request, res: Response) => {
     .map((_) => ({ income: 0, expense: 0 }));
 
   try {
-    let query = Transaction.query().whereBetween('date_added', [
-      startDate,
-      endDate
-    ]);
+    let query = Transaction.query()
+      .where('user_id', user_id)
+      .whereBetween('date_added', [startDate, endDate]);
 
     if (wallet_id) {
       query = query.where('wallet_id', wallet_id);
@@ -179,6 +178,7 @@ export const getYearlyStatistics = async (req: Request, res: Response) => {
 };
 export const getMonthlyStatistics = async (req: Request, res: Response) => {
   const { wallet_id, start_date, tags }: Record<string, any> = req.query;
+  const { id: user_id } = (req as any).user;
 
   if (!start_date) {
     res.status(400).json({ message: 'start_date is required' });
@@ -194,10 +194,9 @@ export const getMonthlyStatistics = async (req: Request, res: Response) => {
     .map((_) => ({ income: 0, expense: 0 }));
 
   try {
-    let query = Transaction.query().whereBetween('date_added', [
-      startDate,
-      endDate
-    ]);
+    let query = Transaction.query()
+      .where('user_id', user_id)
+      .whereBetween('date_added', [startDate, endDate]);
 
     if (wallet_id) {
       query = query.where('wallet_id', wallet_id);
